@@ -1,4 +1,22 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: ashare-postgres
+    environment:
+      POSTGRES_USER: ashare
+      POSTGRES_PASSWORD: ashare
+      POSTGRES_DB: ashare_report
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ashare -d ashare_report"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   app:
     build: .
     container_name: ashare-daily-report
@@ -9,11 +27,12 @@ services:
       - TZ=Asia/Shanghai
       - CRON_SCHEDULE=0 8 * * *
       - ENABLE_SCHEDULER=true
-      - DB_PATH=/app/data/reports.db
+      - DATABASE_URL=postgresql://ashare:ashare@db:5432/ashare_report
       - CURSOR_API_KEY=${CURSOR_API_KEY}
-    volumes:
-      - report-data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  report-data:
+  pg-data:

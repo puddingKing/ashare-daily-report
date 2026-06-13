@@ -13,10 +13,10 @@
     "node": ">=18"
   },
   "dependencies": {
-    "better-sqlite3": "^11.8.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "marked": "^15.0.6",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.3"
   }
 }

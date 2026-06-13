@@ -9,25 +9,41 @@ const {
 
 const router = express.Router();
 
-router.get('/reports', (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 30, 100);
-  res.json({ data: listReports(limit) });
+router.get('/reports', async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 30, 100);
+    const data = await listReports(limit);
+    res.json({ data });
+  } catch (err) {
+    console.error('[api] 获取报告列表失败:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.get('/reports/latest', (req, res) => {
-  const report = getLatestReport();
-  if (!report) {
-    return res.status(404).json({ error: '暂无报告' });
+router.get('/reports/latest', async (req, res) => {
+  try {
+    const report = await getLatestReport();
+    if (!report) {
+      return res.status(404).json({ error: '暂无报告' });
+    }
+    res.json({ data: formatReport(report) });
+  } catch (err) {
+    console.error('[api] 获取最新报告失败:', err);
+    res.status(500).json({ error: err.message });
   }
-  res.json({ data: formatReport(report) });
 });
 
-router.get('/reports/:date', (req, res) => {
-  const report = getReportByDate(req.params.date);
-  if (!report) {
-    return res.status(404).json({ error: '报告不存在' });
+router.get('/reports/:date', async (req, res) => {
+  try {
+    const report = await getReportByDate(req.params.date);
+    if (!report) {
+      return res.status(404).json({ error: '报告不存在' });
+    }
+    res.json({ data: formatReport(report) });
+  } catch (err) {
+    console.error('[api] 获取报告失败:', err);
+    res.status(500).json({ error: err.message });
   }
-  res.json({ data: formatReport(report) });
 });
 
 router.post('/tasks/run', async (req, res) => {
