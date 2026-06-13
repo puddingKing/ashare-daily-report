@@ -1,0 +1,22 @@
+{
+  "name": "ashare-daily-report",
+  "version": "1.0.0",
+  "description": "每日 A 股大盘数据采集、AI 分析报告生成与展示",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "task": "node scripts/run-daily-task.js",
+    "task:force": "node scripts/run-daily-task.js --force"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "marked": "^15.0.6",
+    "node-cron": "^3.0.3"
+  }
+}

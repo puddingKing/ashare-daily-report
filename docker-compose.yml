@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: ashare-daily-report
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - TZ=Asia/Shanghai
+      - CRON_SCHEDULE=0 8 * * *
+      - ENABLE_SCHEDULER=true
+      - DB_PATH=/app/data/reports.db
+      - CURSOR_API_KEY=${CURSOR_API_KEY}
+    volumes:
+      - report-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  report-data:
