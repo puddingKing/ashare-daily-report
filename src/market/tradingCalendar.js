@@ -1,6 +1,7 @@
 const https = require('https');
+const holidays = require('./holidays.json');
 
-const HOLIDAY_API = 'https://timor.tech/api/v1/holiday/info';
+const HOLIDAY_API = 'https://api.jiejiariapi.com/v1/is_holiday';
 
 function fetchJson(url) {
   return new Promise((resolve, reject) => {
@@ -32,18 +33,27 @@ function isWeekday(dateStr) {
   return day >= 1 && day <= 5;
 }
 
-async function fetchHolidayType(dateStr) {
-  const json = await fetchJson(`${HOLIDAY_API}/${dateStr}`);
-  if (json.code !== 0 || !json.type) {
-    throw new Error(json.message || '节假日 API 返回异常');
+function isLocalHoliday(dateStr) {
+  const year = dateStr.slice(0, 4);
+  const yearHolidays = holidays[year] || [];
+  return yearHolidays.includes(dateStr);
+}
+
+async function fetchHolidayInfo(dateStr) {
+  const json = await fetchJson(`${HOLIDAY_API}?date=${dateStr}`);
+  if (typeof json.is_holiday !== 'boolean') {
+    throw new Error('节假日 API 返回格式异常');
   }
-  return json.type;
+  return {
+    isHoliday: json.is_holiday,
+    name: json.holiday?.name || null,
+  };
 }
 
 /**
  * A 股交易日判断：
  * 1. 必须是周一至周五（股市不在调休周六日开市）
- * 2. 不能是法定节假日（holiday type = 2）
+ * 2. 不能是法定节假日
  */
 async function isTradingDay(dateStr) {
   if (!isWeekday(dateStr)) {
@@ -51,13 +61,21 @@ async function isTradingDay(dateStr) {
   }
 
   try {
-    const holiday = await fetchHolidayType(dateStr);
-    if (holiday.type === 2) {
-      return { trading: false, reason: 'holiday', date: dateStr, holidayName: holiday.name };
+    const holiday = await fetchHolidayInfo(dateStr);
+    if (holiday.isHoliday) {
+      return {
+        trading: false,
+        reason: 'holiday',
+        date: dateStr,
+        holidayName: holiday.name,
+      };
     }
-    return { trading: true, reason: 'trading_day', date: dateStr, holidayName: holiday.name || null };
+    return { trading: true, reason: 'trading_day', date: dateStr, holidayName: null };
   } catch (err) {
-    console.warn(`[trading] 节假日 API 不可用，回退为仅工作日判断: ${err.message}`);
+    console.warn(`[trading] 节假日 API 不可用，使用本地节假日数据: ${err.message}`);
+    if (isLocalHoliday(dateStr)) {
+      return { trading: false, reason: 'holiday_local', date: dateStr };
+    }
     return { trading: true, reason: 'weekday_fallback', date: dateStr };
   }
 }

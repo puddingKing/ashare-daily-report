@@ -8,7 +8,7 @@ function startScheduler() {
     return;
   }
 
-  const schedule = process.env.CRON_SCHEDULE || '0 8 * * *';
+  const schedule = (process.env.CRON_SCHEDULE || '0 16 * * *').replace(/^["']|["']$/g, '');
   const timezone = process.env.TZ || 'Asia/Shanghai';
 
   if (!cron.validate(schedule)) {

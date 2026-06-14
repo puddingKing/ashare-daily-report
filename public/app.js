@@ -61,7 +61,7 @@ async function loadReport(date) {
   reportViewEl.classList.add('hidden');
 
   try {
-    const { data } = await fetchJson(`/api/reports/${date}`);
+    const { data } = await fetchJson(`api/reports/${date}`);
     activeDate = date;
     renderReportList();
 
@@ -83,7 +83,7 @@ async function loadReport(date) {
 
 async function init() {
   try {
-    const { data } = await fetchJson('/api/reports?limit=30');
+    const { data } = await fetchJson('api/reports?limit=30');
     reports = data;
 
     if (reports.length === 0) {

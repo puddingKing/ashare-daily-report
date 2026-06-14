@@ -1,6 +1,6 @@
 # A 股每日分析报告
 
-每日 8:00（北京时间）在 **A 股交易日** 自动采集大盘数据，通过 Cursor CLI 生成分析报告，存入 PostgreSQL 数据库，并通过 Web 页面展示。
+每日 16:00（北京时间）在 **A 股交易日** 自动采集大盘数据，通过 Cursor CLI 生成分析报告，存入 PostgreSQL 数据库，并通过 Web 页面展示。
 
 ## 功能
 
@@ -32,6 +32,8 @@ docker compose up -d --build
 ```
 
 访问 http://localhost:3000
+
+线上地址（已配置 nginx）：https://www.luca0527.art/market/
 
 ### 3. 本地运行
 
@@ -71,7 +73,7 @@ docker compose exec app node scripts/run-daily-task.js --force
 定时任务和手动触发（无 `force`）时，会依次检查：
 
 1. **周一至周五**（A 股不在调休周六日开市）
-2. **非法定节假日**（通过 [timor.tech 节假日 API](https://timor.tech/api/v1/holiday/info) 查询）
+2. **非法定节假日**（优先在线 API，失败时回退本地 `holidays.json`）
 
 非交易日会跳过并记录日志，返回 `{ skipped: true, reason: 'non_trading_day' }`。
 
@@ -82,7 +84,7 @@ docker compose exec app node scripts/run-daily-task.js --force
 ```env
 DATABASE_URL=postgresql://ashare:ashare@db:5432/ashare_report
 CURSOR_API_KEY=xxx
-CRON_SCHEDULE=0 8 * * *
+CRON_SCHEDULE=0 16 * * *
 TZ=Asia/Shanghai
 ENABLE_SCHEDULER=true
 ```
@@ -109,3 +111,4 @@ public/                   # 展示页面
 2. **无 API Key**：未配置 `CURSOR_API_KEY` 时会使用规则模板生成简报。
 3. **数据源**：使用东方财富公开接口，仅供个人学习使用。
 4. **数据库**：Docker Compose 默认 PostgreSQL 16，数据持久化在 `pg-data` volume。
+5. **Nginx**：通过 `https://www.luca0527.art/market/` 访问；宝塔面板配置文件见 `deploy/nginx/www.luca0527.art.bt.conf`。

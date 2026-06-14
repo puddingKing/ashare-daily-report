@@ -8,8 +8,6 @@ services:
       POSTGRES_DB: ashare_report
     volumes:
       - pg-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ashare -d ashare_report"]
       interval: 5s
@@ -21,14 +19,14 @@ services:
     build: .
     container_name: ashare-daily-report
     ports:
-      - "3000:3000"
+      - "3080:3000"
     environment:
-      - PORT=3000
-      - TZ=Asia/Shanghai
-      - CRON_SCHEDULE=0 8 * * *
-      - ENABLE_SCHEDULER=true
-      - DATABASE_URL=postgresql://ashare:ashare@db:5432/ashare_report
-      - CURSOR_API_KEY=${CURSOR_API_KEY}
+      PORT: 3000
+      TZ: Asia/Shanghai
+      CRON_SCHEDULE: "0 16 * * *"
+      ENABLE_SCHEDULER: "true"
+      DATABASE_URL: postgresql://ashare:ashare@db:5432/ashare_report
+      CURSOR_API_KEY: ${CURSOR_API_KEY}
     depends_on:
       db:
         condition: service_healthy
